@@ -133,10 +133,10 @@ void MainWindow::update(QString time1,QString data1,QString time2,QString data2,
 
     }
     double d1,d2,d3,d4;
-    d1=17-data1.toDouble()*17;d3=17-data3.toDouble()*17;
-    d2=17-data2.toDouble()*17;d4=17-data4.toDouble()*17;
+    d1=data1.toDouble()*17;d3=data3.toDouble()*17;
+    d2=data2.toDouble()*17;d4=data4.toDouble()*17;
     //控制最大为17，传入数据data默认在0-1之间。
-    qDebug()<<"x,y"<<x1<<y1<<x2<<y2<<x3<<y3<<x4<<y4;
+    qDebug()<<"x,y"<<x1<<y1<<x2<<y2<<x3<<y3<<x4<<y4<<d1<<d2<<d3<<d4;
     for (int xIndex=0; xIndex<nx; ++xIndex)
     {
         for (int yIndex=0; yIndex<ny; ++yIndex)
@@ -145,8 +145,8 @@ void MainWindow::update(QString time1,QString data1,QString time2,QString data2,
             double u,v;
             //r1= 3*qSqrt((x-x1)*(x-x1)+(y-y1)*(y-y1))+1e-2;
             //r2 = 3*qSqrt((x-x2)*(x-x2)+(y-y2)*(y-y2))+1e-2;
-            u=(x-x1)/(x2-x1);
-            v=(y-y1)/(y3-y1);
+            u=(y3-y2)*(x-x2)+(x2-x3)*(y-y2)/(y3-y2)*(x1-x2)+(x2-x3)*(y1-y2);
+            v=(y2-y1)*(x-x2)+(x1-x2)*(y-y2)/(y3-y2)*(x1-x2)+(x2-x3)*(y1-y2);
 
             z=d1*(1-u)*(1-v)+d2*u*(1-v)+d3*u*v+d4*(1-u)*v;
             //qDebug()<<"x,y,z"<<u<<v;
