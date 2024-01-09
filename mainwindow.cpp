@@ -1,11 +1,44 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+QMutex MainWindow::mutex;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    if (QSqlDatabase::contains("download2")) {
+        dblocal = QSqlDatabase::database("download2");
+    } else {
+        dblocal = QSqlDatabase::addDatabase("QODBC","download2");
+    }
+    dblocal.setHostName("127.0.0.1");
+    dblocal.setPort(3306);
+    dblocal.setDatabaseName("Mydesign");
+    dblocal.setUserName("root");
+    dblocal.setPassword("200243");
+    bool ok = dblocal.open();
+    if (ok){
+        qDebug("下载：本地数据库连接成功！");
+    }
+    else {
+        qDebug("下载：本地数据库连接失败！");
+        //qDebug()<<"error open database because"<<dblocal.lastError().text();
+    }
+
+    download = new DownloadThread();
+    download->moveToThread(&downloadTh);
+    connect(&downloadTh,SIGNAL(started()),download,SLOT(onCreateTimer()));
+    connect(&downloadTh,&QThread::finished,download,&QObject::deleteLater);
+    downloadTh.start();
+    //连接子线程传来的显示数据
+    connect(download,SIGNAL(sendText(QString,QString,QString,QString)),this,SLOT(update(QString,QString,QString,QString)));
+
+
+
+
+
     customPlot = new QCustomPlot(this);
     setCentralWidget(customPlot);
     // configure axis rect:
@@ -15,9 +48,19 @@ MainWindow::MainWindow(QWidget *parent)
     customPlot->yAxis->setLabel("y");
 
     // set up the QCPColorMap:
-    QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
-    int nx = 200;
-    int ny = 200;
+    colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
+    nx = 200;
+    ny = 200;
+    this->Set_Pic();
+
+
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+void MainWindow::Set_Pic(){
     colorMap->data()->setSize(nx, ny); // we want the color map to have nx * ny data points
     colorMap->data()->setRange(QCPRange(-4, 4), QCPRange(-4, 4)); // and span the coordinate range -4..4 in both key (x) and value (y) dimensions 并张成坐标范围-4。键(x)和值(y)维度均为4
     // now we assign some data, by accessing the QCPColorMapData instance of the color map: 现在我们通过访问颜色地图的QCPColorMapData实例来分配一些数据:
@@ -29,11 +72,11 @@ MainWindow::MainWindow(QWidget *parent)
             colorMap->data()->cellToCoord(xIndex, yIndex, &x, &y);
             double r = 3*qSqrt(x*x+y*y)+1e-2;
             z=r;
+            qDebug()<<"x,y,z"<<x<<y<<z;
             //z = 2*x*(qCos(r+2)/r-qSin(r+2)/r); // the B field strength of dipole radiation (modulo physical constants) 偶极子辐射B场强(模物理常数)
             colorMap->data()->setCell(xIndex, yIndex, z);
         }
     }
-
     // add a color scale: 增设一个颜色刻度
     QCPColorScale *colorScale = new QCPColorScale(customPlot);
     customPlot->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
@@ -48,18 +91,21 @@ MainWindow::MainWindow(QWidget *parent)
     // 我们也可以创建一个QCPColorGradient实例，并在渐变中添加自己的颜色，请参阅QCPColorGradient的文档。
 
     // rescale the data dimension (color) such that all data points lie in the span visualized by the color gradient:
+    //重新缩放数据维度(颜色)，使所有数据点都位于颜色梯度显示的跨度中:
     colorMap->rescaleDataRange();
 
     // make sure the axis rect and color scale synchronize their bottom and top margins (so they line up):
+    //确保轴矩形和颜色比例同步他们的底部和顶部边距(所以他们对齐):
     QCPMarginGroup *marginGroup = new QCPMarginGroup(customPlot);
     customPlot->axisRect()->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
     colorScale->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
 
     // rescale the key (x) and value (y) axes so the whole color map is visible:
+    //重新缩放键(x)和值(y)轴，使整个彩色地图可见:
     customPlot->rescaleAxes();
 }
+void MainWindow::update(QString time1,QString data1,QString time2,QString data2){
 
-MainWindow::~MainWindow()
-{
-    delete ui;
 }
+
+
