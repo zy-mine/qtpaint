@@ -67,28 +67,47 @@ void DownloadThread::onTimeout()
     bool first=true;
     qDebug()<<"下载子线程运行中!";
     //QSqlQuery queryl(*dblocal);
-    query.exec("select * from HUMIandTEMP1 order by timeset desc;");
+    query.exec("select * from cu_1 order by timeset desc;");
     first=true;
     while(query.next()){
         if(first){
             first=false;
             time1=query.value(0).toString();
-            data1=query.value(2).toString();
+            data1=query.value(1).toString();
         }
     }
 
-    query.exec("delete from HUMIandTEMP2");
-    query.exec("select * from HUMIandTEMP2 order by timeset desc;");
+    query.exec("select * from cu_2 order by timeset desc;");
     first=true;
     while(query.next()){
         if(first){
             first=false;
             time2=query.value(0).toString();
-            data2=query.value(2).toString();
+            data2=query.value(1).toString();
+        }
+    }
+
+    query.exec("select * from cu_3 order by timeset desc;");
+    first=true;
+    while(query.next()){
+        if(first){
+            first=false;
+            time3=query.value(0).toString();
+            data3=query.value(1).toString();
+        }
+    }
+
+    query.exec("select * from cu_4 order by timeset desc;");
+    first=true;
+    while(query.next()){
+        if(first){
+            first=false;
+            time4=query.value(0).toString();
+            data4=query.value(1).toString();
         }
     }
     //像主线程传递显示数据（iot.cpp第52行）
-    emit sendText(time1,data1,time2,data2);
+    emit sendText(time1,data1,time2,data2,time3,data3,time4,data4);
     //db->close();
     MainWindow::mutex.unlock();
 }

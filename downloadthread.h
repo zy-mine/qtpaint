@@ -18,7 +18,7 @@ public slots:
     void onTimeout();
     void timerStartOrStop(int t);
 signals:
-    void sendText(QString,QString,QString,QString);
+    void sendText(QString,QString,QString,QString,QString,QString,QString,QString);
 private:
     QTimer* timer = nullptr;
     QSqlDatabase dblocal;
@@ -27,6 +27,10 @@ private:
 
     QString time2="";
     QString data2="";
+    QString time3="";
+    QString data3="";
+    QString time4="";
+    QString data4="";
 };
 
 #endif // DOWNLOADTHREAD_H
