@@ -4,11 +4,12 @@
 #include <QObject>
 #include <QTimer>
 #include <QSqlDatabase>
+
 class DownloadThread: public QObject
 {
     Q_OBJECT
 public:
-    explicit DownloadThread(QObject *parent = nullptr);
+    explicit DownloadThread(int sensornum,QString num[100],QObject *parent = nullptr);
     ~DownloadThread();
     void Set_Database();
 
@@ -18,7 +19,7 @@ public slots:
     void onTimeout();
     void timerStartOrStop(int t);
 signals:
-    void sendText(QString,QString,QString,QString,QString,QString,QString,QString);
+    void sendText(QString *,QString *);
 private:
     QTimer* timer = nullptr;
     QSqlDatabase dblocal;
@@ -31,6 +32,9 @@ private:
     QString data3="";
     QString time4="";
     QString data4="";
+    QString time[100],data[100];
+    int sensorn;
+    QString n[100];
 };
 
 #endif // DOWNLOADTHREAD_H

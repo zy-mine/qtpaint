@@ -4,9 +4,15 @@
 #include <QSqlQuery>
 #include <mainwindow.h>
 #include <QSqlError>
-DownloadThread::DownloadThread(QObject *parent) : QObject(parent)
+
+DownloadThread::DownloadThread(int sensornum,QString *num,QObject *parent) : QObject(parent)
 {
     Set_Database();
+    sensorn=sensornum;
+    qDebug()<<*(num+1);
+    for(int i=0;i<sensorn;i++){
+        n[i]=*(num+i);
+    }
 }
 DownloadThread::~DownloadThread()
 {
@@ -63,51 +69,74 @@ void DownloadThread::onTimeout()
 {
     MainWindow::mutex.lock();
     QSqlQuery query(dblocal);
-    //int ok;
+    int ok;
     bool first=true;
     qDebug()<<"下载子线程运行中!";
+
+    for(int i=0;i<sensorn;i++){
+        QString queryString = "select * from %1 order by timeset desc;";
+        queryString = queryString.arg(n[i]);
+        ok=query.exec(queryString);
+        if (!ok) {
+            qDebug() << "Insert data into local database error: " << query.lastError().text();
+
+        }
+        else{
+            qDebug()<< ok;
+            while(query.next()){
+                if(first){
+                    first=false;
+                    time[i]=query.value(0).toString();
+                    data[i]=query.value(1).toString();
+                }
+            }
+        }
+        first=true;
+    }
+
     //QSqlQuery queryl(*dblocal);
-    query.exec("select * from cu_1 order by timeset desc;");
-    first=true;
-    while(query.next()){
-        if(first){
-            first=false;
-            time1=query.value(0).toString();
-            data1=query.value(1).toString();
-        }
-    }
+    // query.exec("select * from cu_1 order by timeset desc;");
+    // first=true;
+    // while(query.next()){
+    //     if(first){
+    //         first=false;
+    //         time1=query.value(0).toString();
+    //         data1=query.value(1).toString();
+    //     }
+    // }
 
-    query.exec("select * from cu_2 order by timeset desc;");
-    first=true;
-    while(query.next()){
-        if(first){
-            first=false;
-            time2=query.value(0).toString();
-            data2=query.value(1).toString();
-        }
-    }
+    // query.exec("select * from cu_2 order by timeset desc;");
+    // first=true;
+    // while(query.next()){
+    //     if(first){
+    //         first=false;
+    //         time2=query.value(0).toString();
+    //         data2=query.value(1).toString();
+    //     }
+    // }
 
-    query.exec("select * from cu_3 order by timeset desc;");
-    first=true;
-    while(query.next()){
-        if(first){
-            first=false;
-            time3=query.value(0).toString();
-            data3=query.value(1).toString();
-        }
-    }
+    // query.exec("select * from cu_3 order by timeset desc;");
+    // first=true;
+    // while(query.next()){
+    //     if(first){
+    //         first=false;
+    //         time3=query.value(0).toString();
+    //         data3=query.value(1).toString();
+    //     }
+    // }
 
-    query.exec("select * from cu_4 order by timeset desc;");
-    first=true;
-    while(query.next()){
-        if(first){
-            first=false;
-            time4=query.value(0).toString();
-            data4=query.value(1).toString();
-        }
-    }
+    // query.exec("select * from cu_4 order by timeset desc;");
+    // first=true;
+    // while(query.next()){
+    //     if(first){
+    //         first=false;
+    //         time4=query.value(0).toString();
+    //         data4=query.value(1).toString();
+    //     }
+    // }
     //像主线程传递显示数据（iot.cpp第52行）
-    emit sendText(time1,data1,time2,data2,time3,data3,time4,data4);
+    //emit sendText(time1,data1,time2,data2,time3,data3,time4,data4);
     //db->close();
+    emit sendText(time,data);
     MainWindow::mutex.unlock();
 }
