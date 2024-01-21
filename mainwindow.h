@@ -31,6 +31,10 @@ public:
     int sensornum;
 private slots:
     void update(QString *time,QString *data);
+    void on_pushButton_clicked();
+
+    void on_pushButton_2_clicked();
+
 signals:
     void sendData(int);
 
@@ -39,6 +43,7 @@ private:
     QCustomPlot *customPlot;
     QSqlDatabase dblocal;
     QTimer timer;
+    int timer1=0;
     DownloadThread *download;
     QThread downloadTh;
     QCPColorMap *colorMap;
@@ -49,6 +54,8 @@ private:
     double d1,d2,d3,d4;
     double xg[100],yg[100];//存储各个传感器位置信息
     double u,v;
+    int mathe;
+    QCPColorScale *colorScale;
 
 };
 #endif // MAINWINDOW_H
