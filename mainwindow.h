@@ -10,6 +10,7 @@
 #include <QMutex>
 #include <downloadthread.h>
 
+
 #include "qcustomplot.h"
 
 QT_BEGIN_NAMESPACE
@@ -27,8 +28,13 @@ public:
     ~MainWindow();
     static QMutex mutex;
     void Set_Pic();
+    int sensornum;
 private slots:
-    void update(QString time1,QString data1,QString time2,QString data2,QString time3,QString data3,QString time4,QString data4);
+    void update(QString *time,QString *data);
+    void on_pushButton_clicked();
+
+    void on_pushButton_2_clicked();
+
 signals:
     void sendData(int);
 
@@ -37,12 +43,19 @@ private:
     QCustomPlot *customPlot;
     QSqlDatabase dblocal;
     QTimer timer;
+    int timer1=0;
     DownloadThread *download;
     QThread downloadTh;
     QCPColorMap *colorMap;
     int nx,ny;
     double x, y, z;
-    QString num1,num2;
+    QString num1[100];
     double x1,y1,x2,y2,x3,x4,y3,y4;
+    double d1,d2,d3,d4;
+    double xg[100],yg[100];//存储各个传感器位置信息
+    double u,v;
+    int mathe;
+    QCPColorScale *colorScale;
+
 };
 #endif // MAINWINDOW_H
