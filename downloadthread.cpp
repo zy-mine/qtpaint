@@ -50,10 +50,10 @@ void DownloadThread::Set_Database(){
     } else {
         dblocal = QSqlDatabase::addDatabase("QODBC","download2");
     }
-    dblocal.setHostName("127.0.0.1");
+    dblocal.setHostName("120.25.3.98");
     dblocal.setPort(3306);
-    dblocal.setDatabaseName("Mydesign");
-    dblocal.setUserName("root");
+    dblocal.setDatabaseName("Mydesign1");
+    dblocal.setUserName("IonCt");
     dblocal.setPassword("200243");
     bool ok = dblocal.open();
     if (ok){
@@ -93,7 +93,6 @@ void DownloadThread::onTimeout()
         }
         first=true;
     }
-    //像主线程传递显示数据（iot.cpp第52行）
     emit sendText(time,data);
     MainWindow::mutex.unlock();
 }

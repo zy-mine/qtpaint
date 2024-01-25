@@ -9,6 +9,7 @@
 #include <QThread>
 #include <QMutex>
 #include <downloadthread.h>
+#include <switchbtn.h>
 
 
 #include "qcustomplot.h"
@@ -32,9 +33,9 @@ public:
 private slots:
     void update(QString *time,QString *data);
     void on_pushButton_clicked();
-
     void on_pushButton_2_clicked();
-
+public slots:
+    void Slot1();
 signals:
     void sendData(int);
 
@@ -44,7 +45,9 @@ private:
     QSqlDatabase dblocal;
     QTimer timer;
     int timer1=0;
+    bool mathe=false;
     DownloadThread *download;
+    SwitchBtn *switchbtn;
     QThread downloadTh;
     QCPColorMap *colorMap;
     int nx,ny;
@@ -54,7 +57,6 @@ private:
     double d1,d2,d3,d4;
     double xg[100],yg[100];//存储各个传感器位置信息
     double u,v;
-    int mathe;
     QCPColorScale *colorScale;
 
 };

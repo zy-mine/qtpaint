@@ -6,7 +6,6 @@
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_interp2d.h>
 
-
 QMutex MainWindow::mutex;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -19,10 +18,10 @@ MainWindow::MainWindow(QWidget *parent)
     } else {
         dblocal = QSqlDatabase::addDatabase("QODBC","download2");
     }
-    dblocal.setHostName("127.0.0.1");
+    dblocal.setHostName("120.25.3.98");
     dblocal.setPort(3306);
-    dblocal.setDatabaseName("Mydesign");
-    dblocal.setUserName("root");
+    dblocal.setDatabaseName("Mydesign1");
+    dblocal.setUserName("IonCt");
     dblocal.setPassword("200243");
     bool ok = dblocal.open();
     if (ok){
@@ -43,6 +42,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     }
 
+    switchbtn=ui->widget;
+    connect(switchbtn,SIGNAL(btnChanged()),this,SLOT(Slot1()));
+
     download = new DownloadThread(sensornum,num1);
     download->moveToThread(&downloadTh);
     connect(&downloadTh,SIGNAL(started()),download,SLOT(onCreateTimer()));
@@ -50,9 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
     downloadTh.start();
     //连接子线程传来的显示数据
     connect(download,SIGNAL(sendText(QString *,QString *)),this,SLOT(update(QString*,QString*)));//信号
-    connect(this,SIGNAL(sendData2(int)),download,SLOT(timerStartOrStop(int)));
-
-
+    connect(this,SIGNAL(sendData(int)),download,SLOT(timerStartOrStop(int)));
 
 
 
@@ -82,7 +82,7 @@ MainWindow::~MainWindow()
 void MainWindow::Set_Pic(){
     colorMap->data()->setSize(nx, ny); // we want the color map to have nx * ny data points
     colorMap->data()->setRange(QCPRange(-4, 4), QCPRange(-4, 4)); // and span the coordinate range -4..4 in both key (x) and value (y) dimensions 并张成坐标范围-4。键(x)和值(y)维度均为4
-    mathe=0;
+
      customPlot->xAxis->setLabel("经度");
      customPlot->yAxis->setLabel("纬度");
     // colorScale->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
@@ -115,7 +115,7 @@ void MainWindow::update(QString *time,QString *data){
     //int min_sensor[4]={0};
     //bool first=true;
 
-    if(mathe==1){
+    if(mathe){
         // 创建 GSL 插值所需的变量
         double xa[5]={-4,-2,0,2,4};
         //double xa[5]={0,2,4,6,8};
@@ -162,7 +162,7 @@ void MainWindow::update(QString *time,QString *data){
     }
 
     //注释1
-    else if(mathe==0){
+    else if(!mathe){
         int p=qSqrt(sensornum);
         colorMap->data()->setSize(nx, ny); // we want the color map to have nx * ny data points
         colorMap->data()->setRange(QCPRange(-4, 4), QCPRange(-4, 4));
@@ -219,10 +219,15 @@ void MainWindow::on_pushButton_clicked()
     //通过子线程开启模拟数据定时器
     emit sendData(timer1);
 
-    mathe=0;
+    mathe=false;
 }
 
-
+void MainWindow::Slot1(){
+    connect(this,SIGNAL(sendData(int)),download,SLOT(timerStartOrStop(int)));
+    //通过子线程开启模拟数据定时器
+    emit sendData(timer1);
+    mathe=!mathe;
+}
 
 void MainWindow::on_pushButton_2_clicked()
 {
@@ -230,6 +235,8 @@ void MainWindow::on_pushButton_2_clicked()
     //通过子线程开启模拟数据定时器
     emit sendData(timer1);
     //timer1=0;
-    mathe=1;
+    mathe=true;
 }
+
+
 

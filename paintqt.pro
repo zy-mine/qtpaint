@@ -14,15 +14,18 @@ SOURCES += \
     downloadthread.cpp \
     main.cpp \
     mainwindow.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    switchbtn.cpp
 
 HEADERS += \
     downloadthread.h \
     mainwindow.h \
-    qcustomplot.h
+    qcustomplot.h \
+    switchbtn.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    switchbtn.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
