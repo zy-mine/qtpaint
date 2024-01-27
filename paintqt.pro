@@ -15,13 +15,15 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     qcustomplot.cpp \
-    switchbtn.cpp
+    switchbtn.cpp \
+    updatethread.cpp
 
 HEADERS += \
     downloadthread.h \
     mainwindow.h \
     qcustomplot.h \
-    switchbtn.h
+    switchbtn.h \
+    updatethread.h
 
 FORMS += \
     mainwindow.ui \

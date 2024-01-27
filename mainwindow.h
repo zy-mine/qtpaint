@@ -9,6 +9,7 @@
 #include <QThread>
 #include <QMutex>
 #include <downloadthread.h>
+#include <updatethread.h>
 #include <switchbtn.h>
 
 
@@ -33,22 +34,30 @@ public:
 private slots:
     void update(QString *time,QString *data);
     void on_pushButton_clicked();
-    void on_pushButton_2_clicked();
+    //void on_pushButton_2_clicked();
+    void on_update_button_clicked();
+
 public slots:
     void Slot1();
 signals:
     void sendData(int);
-
+    void sendData1(int);
 private:
     Ui::MainWindow *ui;
     QCustomPlot *customPlot;
     QSqlDatabase dblocal;
     QTimer timer;
     int timer1=0;
+    int timer3_timeout=0;
     bool mathe=false;
+
     DownloadThread *download;
     SwitchBtn *switchbtn;
     QThread downloadTh;
+
+    UpdateThread *updateth;
+    QThread updateTh;
+
     QCPColorMap *colorMap;
     int nx,ny;
     double x, y, z;

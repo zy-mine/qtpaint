@@ -78,7 +78,7 @@ void DownloadThread::onTimeout()
         queryString = queryString.arg(n[i]);
         ok=query.exec(queryString);
         if (!ok) {
-            qDebug() << "Insert data into local database error: " << query.lastError().text();
+            qDebug() << "check data into local database error: " << query.lastError().text();
 
         }
         else{

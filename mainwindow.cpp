@@ -42,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     }
 
+
     switchbtn=ui->widget;
     connect(switchbtn,SIGNAL(btnChanged()),this,SLOT(Slot1()));
 
@@ -54,6 +55,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(download,SIGNAL(sendText(QString *,QString *)),this,SLOT(update(QString*,QString*)));//信号
     connect(this,SIGNAL(sendData(int)),download,SLOT(timerStartOrStop(int)));
 
+    updateth = new UpdateThread(sensornum,num1);
+    updateth->moveToThread(&updateTh);
+    connect(&updateTh,SIGNAL(started()),updateth,SLOT(onCreateTimer()));
+    connect(&updateTh,&QThread::finished,updateth,&QObject::deleteLater);
+    updateTh.start();
 
 
 
@@ -77,6 +83,13 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    dblocal.close();
+    updateTh.quit();
+    updateTh.wait();
+    updateTh.deleteLater();
+    downloadTh.quit();
+    downloadTh.wait();
+    downloadTh.deleteLater();
     delete ui;
 }
 void MainWindow::Set_Pic(){
@@ -215,28 +228,63 @@ void MainWindow::update(QString *time,QString *data){
 
 void MainWindow::on_pushButton_clicked()
 {
-    connect(this,SIGNAL(sendData(int)),download,SLOT(timerStartOrStop(int)));
-    //通过子线程开启模拟数据定时器
-    emit sendData(timer1);
 
-    mathe=false;
+    //mathe=false;
+    if(timer1==0){
+        //连接子线程定时器开关
+        connect(this,SIGNAL(sendData(int)),download,SLOT(timerStartOrStop(int)));
+        //通过子线程开启模拟数据定时器
+        emit sendData(timer1);
+        timer1=1;
+        //timer2->start(TIMEOUT);
+        ui->pushButton->setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(255,255 , 0, 255), stop:1 rgba(0, 255, 0, 255));"
+                                           "border-radius:10px;font: 11pt 'Adobe Devanagari';");
+    }else if(timer1==1){
+        connect(this,SIGNAL(sendData(int)),download,SLOT(timerStartOrStop(int)));
+        emit sendData(timer1);
+        timer1=0;
+        //timer2->stop();
+        ui->pushButton->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(255,0 , 0, 255), stop:1 rgba(255, 255, 0, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                           "QPushButton:hover{background-color: rgb(255, 255, 0);}"
+                                           "border-radius:10px;font: 11pt 'Adobe Devanagari';");
+    }
 }
 
+//滑动按钮控制器
 void MainWindow::Slot1(){
-    connect(this,SIGNAL(sendData(int)),download,SLOT(timerStartOrStop(int)));
-    //通过子线程开启模拟数据定时器
-    emit sendData(timer1);
     mathe=!mathe;
 }
 
-void MainWindow::on_pushButton_2_clicked()
+// void MainWindow::on_pushButton_2_clicked()
+// {
+//     connect(this,SIGNAL(sendData(int)),download,SLOT(timerStartOrStop(int)));
+//     //通过子线程开启模拟数据定时器
+//     emit sendData(timer1);
+//     //timer1=0;
+//     mathe=true;
+// }
+
+void MainWindow::on_update_button_clicked()
 {
-    connect(this,SIGNAL(sendData(int)),download,SLOT(timerStartOrStop(int)));
-    //通过子线程开启模拟数据定时器
-    emit sendData(timer1);
-    //timer1=0;
-    mathe=true;
+    if(timer3_timeout==0){
+        //连接子线程定时器开关
+        connect(this,SIGNAL(sendData1(int)),updateth,SLOT(timerStartOrStop(int)));
+        //通过子线程开启模拟数据定时器
+        emit sendData1(timer3_timeout);
+        timer3_timeout=1;
+
+        //更改按钮状态
+        ui->update_button->setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(255,255 , 0, 255), stop:1 rgba(0, 255, 0, 255));"
+                                         "border-radius:10px;font: 11pt 'Adobe Devanagari';");
+    }else if(timer3_timeout==1){
+        connect(this,SIGNAL(sendData1(int)),updateth,SLOT(timerStartOrStop(int)));
+        emit sendData1(timer3_timeout);
+        //关闭定时器
+        //更改按钮状态
+        timer3_timeout=0;
+        ui->update_button->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(255,0 , 0, 255), stop:1 rgba(255, 255, 0, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                         "QPushButton:hover{background-color: rgb(255, 255, 0);}"
+                                         "border-radius:10px;font: 11pt 'Adobe Devanagari';");
+    }
 }
-
-
 
