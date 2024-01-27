@@ -23,15 +23,6 @@ signals:
 private:
     QTimer* timer = nullptr;
     QSqlDatabase dblocal;
-    QString time1="";
-    QString data1="";
-
-    QString time2="";
-    QString data2="";
-    QString time3="";
-    QString data3="";
-    QString time4="";
-    QString data4="";
     QString time[100],data[100];
     int sensorn;
     QString n[100];
