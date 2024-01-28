@@ -11,7 +11,7 @@
 #include <downloadthread.h>
 #include <updatethread.h>
 #include <switchbtn.h>
-
+#include <QMouseEvent>
 
 #include "qcustomplot.h"
 
@@ -36,9 +36,11 @@ private slots:
     void on_pushButton_clicked();
     //void on_pushButton_2_clicked();
     void on_update_button_clicked();
+    void mouseMoveEvent(QMouseEvent *mouseEvent);
 
 public slots:
     void Slot1();
+    //void mouseRelease(QMouseEvent *event);
 signals:
     void sendData(int);
     void sendData1(int);
@@ -50,6 +52,8 @@ private:
     int timer1=0;
     int timer3_timeout=0;
     bool mathe=false;
+
+    QCPItemText *textLabel;//显示鼠标当前位置离子浓度
 
     DownloadThread *download;
     SwitchBtn *switchbtn;
@@ -67,6 +71,7 @@ private:
     double xg[100],yg[100];//存储各个传感器位置信息
     double u,v;
     QCPColorScale *colorScale;
+
 
 };
 #endif // MAINWINDOW_H

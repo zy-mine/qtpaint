@@ -46,6 +46,8 @@ MainWindow::MainWindow(QWidget *parent)
     switchbtn=ui->widget;
     connect(switchbtn,SIGNAL(btnChanged()),this,SLOT(Slot1()));
 
+
+
     download = new DownloadThread(sensornum,num1);
     download->moveToThread(&downloadTh);
     connect(&downloadTh,SIGNAL(started()),download,SLOT(onCreateTimer()));
@@ -72,13 +74,31 @@ MainWindow::MainWindow(QWidget *parent)
     customPlot->xAxis->setLabel("x");
     customPlot->yAxis->setLabel("y");
 
+
     // set up the QCPColorMap:
     colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
     nx = 200;
     ny = 200;
+
     this->Set_Pic();
 
+    //初始化可显示鼠标位置处离子浓度的标签
+    customPlot->setInteraction(QCP::iRangeDrag, true); // 允许拖动范围
+    customPlot->setInteraction(QCP::iRangeZoom, true); // 允许缩放范围
+    textLabel = new QCPItemText(customPlot);
+    textLabel->setPositionAlignment(Qt::AlignTop | Qt::AlignHCenter);
+    textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
+    textLabel->position->setCoords(0.5, 0); // 显示在画布顶部中心位置
+    textLabel->setText("Hover over a point");
+    textLabel->setFont(QFont(font().family(), 8));
+    textLabel->setPadding(QMargins(8, 4, 8, 4));
+    textLabel->setPen(QPen(Qt::black));
+    textLabel->setBrush(QBrush(Qt::white));
+    textLabel->setLayer("overlay");
 
+
+    connect(customPlot, &QCustomPlot::mouseMove, this, &MainWindow::mouseMoveEvent);
+    customPlot->setMouseTracking(true);
 }
 
 MainWindow::~MainWindow()
@@ -205,12 +225,6 @@ void MainWindow::update(QString *time,QString *data){
     }
 
 
-
-
-
-
-
-
     //重新缩放数据维度(颜色)，使所有数据点都位于颜色梯度显示的跨度中:
     colorMap->rescaleDataRange();
     // make sure the axis rect and color scale synchronize their bottom and top margins (so they line up):
@@ -287,4 +301,25 @@ void MainWindow::on_update_button_clicked()
                                          "border-radius:10px;font: 11pt 'Adobe Devanagari';");
     }
 }
+
+void MainWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
+{
+    QPoint pos = mouseEvent->pos();
+    // 将像素坐标转换为画布坐标系下的值
+    double x = customPlot->xAxis->pixelToCoord(pos.x());
+    double y = customPlot->yAxis->pixelToCoord(pos.y());
+    int p,q;
+    colorMap->data()->coordToCell(x,y,&p,&q);
+    double ct = colorMap->data()->cell(p,q);
+    // 更新文本标签显示的坐标数据
+    QString labelText = QString("X: %1  Y: %2  CT: %3").arg(x).arg(y).arg(ct);
+    textLabel->setText(labelText);
+    //qDebug()<<labelText;
+    // 更新文本标签位置，使其始终显示在画布顶部中心位置
+    double rectWidth = customPlot->axisRect()->width();
+    textLabel->position->setCoords(0.5, 0);
+    customPlot->replot();
+}
+
+
 
