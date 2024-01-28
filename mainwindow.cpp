@@ -115,7 +115,7 @@ MainWindow::~MainWindow()
 void MainWindow::Set_Pic(){
     colorMap->data()->setSize(nx, ny); // we want the color map to have nx * ny data points
     colorMap->data()->setRange(QCPRange(-4, 4), QCPRange(-4, 4)); // and span the coordinate range -4..4 in both key (x) and value (y) dimensions 并张成坐标范围-4。键(x)和值(y)维度均为4
-
+    colorMap->setVisible(false);
      customPlot->xAxis->setLabel("经度");
      customPlot->yAxis->setLabel("纬度");
     // colorScale->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
@@ -132,6 +132,8 @@ void MainWindow::Set_Pic(){
     // 将颜色映射的颜色渐变设置为预设之一
     // 我们也可以创建一个QCPColorGradient实例，并在渐变中添加自己的颜色。
     colorMap->setGradient(QCPColorGradient::gpJet);
+    QTimer::singleShot(0,download, SLOT(onTimeout()));
+    //colorMap->setVisible(true);
 }
 //void MainWindow::update(QString time1,QString data1,QString time2,QString data2,QString time3,QString data3,QString time4,QString data4)
 void MainWindow::update(QString *time,QString *data){
@@ -226,7 +228,7 @@ void MainWindow::update(QString *time,QString *data){
 
 
     //重新缩放数据维度(颜色)，使所有数据点都位于颜色梯度显示的跨度中:
-    colorMap->rescaleDataRange();
+    //colorMap->rescaleDataRange();
     // make sure the axis rect and color scale synchronize their bottom and top margins (so they line up):
     //确保轴矩形和颜色比例同步他们的底部和顶部边距(所以他们对齐):
     QCPMarginGroup *marginGroup = new QCPMarginGroup(customPlot);
@@ -235,7 +237,9 @@ void MainWindow::update(QString *time,QString *data){
     // rescale the key (x) and value (y) axes so the whole color map is visible:
     //重新缩放键(x)和值(y)轴，使整个彩色地图可见:
     customPlot->rescaleAxes();
+    if(colorMap->visible()!=true) colorMap->setVisible(true);
     customPlot->replot();
+
 }
 
 
@@ -267,6 +271,7 @@ void MainWindow::on_pushButton_clicked()
 //滑动按钮控制器
 void MainWindow::Slot1(){
     mathe=!mathe;
+    QTimer::singleShot(0,download, SLOT(onTimeout()));
 }
 
 // void MainWindow::on_pushButton_2_clicked()

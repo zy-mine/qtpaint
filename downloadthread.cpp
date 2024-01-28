@@ -26,11 +26,11 @@ void DownloadThread::onCreateTimer()
 {
     //关键点：在子线程中创建QTimer的对象
     timer = new QTimer();
-    //每10秒刷新一次页面
+    //每1秒刷新一次页面
     timer->setInterval(1000);
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
     //单次定时器，首次加载IOT传递初始数据
-    QTimer::singleShot(0,this, SLOT(onTimeout()));
+    //QTimer::singleShot(0,this, SLOT(onTimeout()));
     //timer->stop();
 }
 //在子线程中开启定时器函数，用于主线程操纵子线程（定时器只能在创建函数中操作）
