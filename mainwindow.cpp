@@ -46,6 +46,12 @@ MainWindow::MainWindow(QWidget *parent)
     switchbtn=ui->widget;
     connect(switchbtn,SIGNAL(btnChanged()),this,SLOT(Slot1()));
 
+    ui->update_button->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(72,209,204, 255), stop:1 rgba(0, 250,154, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                     "QPushButton:hover{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(70,130,180, 255), stop:1 rgba(34,139,34, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                     "border-radius:10px;font: 11pt 'Adobe Devanagari';");
+    ui->pushButton->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(72,209,204, 255), stop:1 rgba(0, 250,154, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                  "QPushButton:hover{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(70,130,180, 255), stop:1 rgba(34,139,34, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                  "border-radius:10px;font: 11pt 'Adobe Devanagari';");
 
 
     download = new DownloadThread(sensornum,num1);
@@ -255,15 +261,15 @@ void MainWindow::on_pushButton_clicked()
         emit sendData(timer1);
         timer1=1;
         //timer2->start(TIMEOUT);
-        ui->pushButton->setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(255,255 , 0, 255), stop:1 rgba(0, 255, 0, 255));"
+        ui->pushButton->setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(60,179,113, 255), stop:1 rgba(32,178,170, 255));"
                                            "border-radius:10px;font: 11pt 'Adobe Devanagari';");
     }else if(timer1==1){
         connect(this,SIGNAL(sendData(int)),download,SLOT(timerStartOrStop(int)));
         emit sendData(timer1);
         timer1=0;
         //timer2->stop();
-        ui->pushButton->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(255,0 , 0, 255), stop:1 rgba(255, 255, 0, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
-                                           "QPushButton:hover{background-color: rgb(255, 255, 0);}"
+        ui->pushButton->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(72,209,204, 255), stop:1 rgba(0, 250,154, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                           "QPushButton:hover{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(70,130,180, 255), stop:1 rgba(34,139,34, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
                                            "border-radius:10px;font: 11pt 'Adobe Devanagari';");
     }
 }
@@ -293,7 +299,7 @@ void MainWindow::on_update_button_clicked()
         timer3_timeout=1;
 
         //更改按钮状态
-        ui->update_button->setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(255,255 , 0, 255), stop:1 rgba(0, 255, 0, 255));"
+        ui->update_button->setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(60,179,113, 255), stop:1 rgba(32,178,170, 255));"
                                          "border-radius:10px;font: 11pt 'Adobe Devanagari';");
     }else if(timer3_timeout==1){
         connect(this,SIGNAL(sendData1(int)),updateth,SLOT(timerStartOrStop(int)));
@@ -301,8 +307,8 @@ void MainWindow::on_update_button_clicked()
         //关闭定时器
         //更改按钮状态
         timer3_timeout=0;
-        ui->update_button->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(255,0 , 0, 255), stop:1 rgba(255, 255, 0, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
-                                         "QPushButton:hover{background-color: rgb(255, 255, 0);}"
+        ui->update_button->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(72,209,204, 255), stop:1 rgba(0, 250,154, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                         "QPushButton:hover{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(70,130,180, 255), stop:1 rgba(34,139,34, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
                                          "border-radius:10px;font: 11pt 'Adobe Devanagari';");
     }
 }

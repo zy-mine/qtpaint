@@ -29,9 +29,9 @@ private:
     Ui::SwitchBtn *ui;
     bool isOff=true;
     QBrush offBgBrush= Qt::white;
-    QBrush onBgBrush= Qt::red;
+    QBrush onBgBrush= Qt::cyan;
 
-    QBrush offIndicatorBrush= Qt::red;
+    QBrush offIndicatorBrush= Qt::cyan;
     QBrush onIndicatorBrush= Qt::white;
 
     QString offText="双线性插值";
