@@ -46,6 +46,14 @@ MainWindow::MainWindow(QWidget *parent)
     switchbtn=ui->widget;
     connect(switchbtn,SIGNAL(btnChanged()),this,SLOT(Slot1()));
 
+    ui->update_button->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(72,209,204, 255), stop:1 rgba(0, 250,154, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                     "QPushButton:hover{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(70,130,180, 255), stop:1 rgba(34,139,34, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                     "border-radius:10px;font: 11pt 'Adobe Devanagari';");
+    ui->pushButton->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(72,209,204, 255), stop:1 rgba(0, 250,154, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                  "QPushButton:hover{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(70,130,180, 255), stop:1 rgba(34,139,34, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                  "border-radius:10px;font: 11pt 'Adobe Devanagari';");
+
+
     download = new DownloadThread(sensornum,num1);
     download->moveToThread(&downloadTh);
     connect(&downloadTh,SIGNAL(started()),download,SLOT(onCreateTimer()));
@@ -72,13 +80,31 @@ MainWindow::MainWindow(QWidget *parent)
     customPlot->xAxis->setLabel("x");
     customPlot->yAxis->setLabel("y");
 
+
     // set up the QCPColorMap:
     colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
     nx = 200;
     ny = 200;
+
     this->Set_Pic();
 
+    //初始化可显示鼠标位置处离子浓度的标签
+    customPlot->setInteraction(QCP::iRangeDrag, true); // 允许拖动范围
+    customPlot->setInteraction(QCP::iRangeZoom, true); // 允许缩放范围
+    textLabel = new QCPItemText(customPlot);
+    textLabel->setPositionAlignment(Qt::AlignTop | Qt::AlignHCenter);
+    textLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
+    textLabel->position->setCoords(0.5, 0); // 显示在画布顶部中心位置
+    textLabel->setText("Hover over a point");
+    textLabel->setFont(QFont(font().family(), 8));
+    textLabel->setPadding(QMargins(8, 4, 8, 4));
+    textLabel->setPen(QPen(Qt::black));
+    textLabel->setBrush(QBrush(Qt::white));
+    textLabel->setLayer("overlay");
 
+
+    connect(customPlot, &QCustomPlot::mouseMove, this, &MainWindow::mouseMoveEvent);
+    customPlot->setMouseTracking(true);
 }
 
 MainWindow::~MainWindow()
@@ -95,7 +121,7 @@ MainWindow::~MainWindow()
 void MainWindow::Set_Pic(){
     colorMap->data()->setSize(nx, ny); // we want the color map to have nx * ny data points
     colorMap->data()->setRange(QCPRange(-4, 4), QCPRange(-4, 4)); // and span the coordinate range -4..4 in both key (x) and value (y) dimensions 并张成坐标范围-4。键(x)和值(y)维度均为4
-
+    colorMap->setVisible(false);
      customPlot->xAxis->setLabel("经度");
      customPlot->yAxis->setLabel("纬度");
     // colorScale->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
@@ -112,6 +138,8 @@ void MainWindow::Set_Pic(){
     // 将颜色映射的颜色渐变设置为预设之一
     // 我们也可以创建一个QCPColorGradient实例，并在渐变中添加自己的颜色。
     colorMap->setGradient(QCPColorGradient::gpJet);
+    QTimer::singleShot(0,download, SLOT(onTimeout()));
+    //colorMap->setVisible(true);
 }
 //void MainWindow::update(QString time1,QString data1,QString time2,QString data2,QString time3,QString data3,QString time4,QString data4)
 void MainWindow::update(QString *time,QString *data){
@@ -205,14 +233,8 @@ void MainWindow::update(QString *time,QString *data){
     }
 
 
-
-
-
-
-
-
     //重新缩放数据维度(颜色)，使所有数据点都位于颜色梯度显示的跨度中:
-    colorMap->rescaleDataRange();
+    //colorMap->rescaleDataRange();
     // make sure the axis rect and color scale synchronize their bottom and top margins (so they line up):
     //确保轴矩形和颜色比例同步他们的底部和顶部边距(所以他们对齐):
     QCPMarginGroup *marginGroup = new QCPMarginGroup(customPlot);
@@ -221,7 +243,9 @@ void MainWindow::update(QString *time,QString *data){
     // rescale the key (x) and value (y) axes so the whole color map is visible:
     //重新缩放键(x)和值(y)轴，使整个彩色地图可见:
     customPlot->rescaleAxes();
+    if(colorMap->visible()!=true) colorMap->setVisible(true);
     customPlot->replot();
+
 }
 
 
@@ -237,15 +261,15 @@ void MainWindow::on_pushButton_clicked()
         emit sendData(timer1);
         timer1=1;
         //timer2->start(TIMEOUT);
-        ui->pushButton->setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(255,255 , 0, 255), stop:1 rgba(0, 255, 0, 255));"
+        ui->pushButton->setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(60,179,113, 255), stop:1 rgba(32,178,170, 255));"
                                            "border-radius:10px;font: 11pt 'Adobe Devanagari';");
     }else if(timer1==1){
         connect(this,SIGNAL(sendData(int)),download,SLOT(timerStartOrStop(int)));
         emit sendData(timer1);
         timer1=0;
         //timer2->stop();
-        ui->pushButton->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(255,0 , 0, 255), stop:1 rgba(255, 255, 0, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
-                                           "QPushButton:hover{background-color: rgb(255, 255, 0);}"
+        ui->pushButton->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(72,209,204, 255), stop:1 rgba(0, 250,154, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                           "QPushButton:hover{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(70,130,180, 255), stop:1 rgba(34,139,34, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
                                            "border-radius:10px;font: 11pt 'Adobe Devanagari';");
     }
 }
@@ -253,6 +277,7 @@ void MainWindow::on_pushButton_clicked()
 //滑动按钮控制器
 void MainWindow::Slot1(){
     mathe=!mathe;
+    QTimer::singleShot(0,download, SLOT(onTimeout()));
 }
 
 // void MainWindow::on_pushButton_2_clicked()
@@ -274,7 +299,7 @@ void MainWindow::on_update_button_clicked()
         timer3_timeout=1;
 
         //更改按钮状态
-        ui->update_button->setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(255,255 , 0, 255), stop:1 rgba(0, 255, 0, 255));"
+        ui->update_button->setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(60,179,113, 255), stop:1 rgba(32,178,170, 255));"
                                          "border-radius:10px;font: 11pt 'Adobe Devanagari';");
     }else if(timer3_timeout==1){
         connect(this,SIGNAL(sendData1(int)),updateth,SLOT(timerStartOrStop(int)));
@@ -282,9 +307,30 @@ void MainWindow::on_update_button_clicked()
         //关闭定时器
         //更改按钮状态
         timer3_timeout=0;
-        ui->update_button->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(255,0 , 0, 255), stop:1 rgba(255, 255, 0, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
-                                         "QPushButton:hover{background-color: rgb(255, 255, 0);}"
+        ui->update_button->setStyleSheet("QPushButton{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(72,209,204, 255), stop:1 rgba(0, 250,154, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
+                                         "QPushButton:hover{background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(70,130,180, 255), stop:1 rgba(34,139,34, 255)); border-radius:10px;font: 11pt 'Adobe Devanagari';}"
                                          "border-radius:10px;font: 11pt 'Adobe Devanagari';");
     }
 }
+
+void MainWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
+{
+    QPoint pos = mouseEvent->pos();
+    // 将像素坐标转换为画布坐标系下的值
+    double x = customPlot->xAxis->pixelToCoord(pos.x());
+    double y = customPlot->yAxis->pixelToCoord(pos.y());
+    int p,q;
+    colorMap->data()->coordToCell(x,y,&p,&q);
+    double ct = colorMap->data()->cell(p,q);
+    // 更新文本标签显示的坐标数据
+    QString labelText = QString("X: %1  Y: %2  CT: %3").arg(x).arg(y).arg(ct);
+    textLabel->setText(labelText);
+    //qDebug()<<labelText;
+    // 更新文本标签位置，使其始终显示在画布顶部中心位置
+    double rectWidth = customPlot->axisRect()->width();
+    textLabel->position->setCoords(0.5, 0);
+    customPlot->replot();
+}
+
+
 
