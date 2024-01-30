@@ -7,6 +7,9 @@
 #include <gsl/gsl_interp2d.h>
 
 QMutex MainWindow::mutex;
+
+int currenttype;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -31,18 +34,55 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug("下载：本地数据库连接失败！");
         //qDebug()<<"error open database because"<<dblocal.lastError().text();
     }
-    QSqlQuery query(dblocal);
-    query.exec("select * from sensor order by yloc asc,xloc asc;");
+    QSqlQuery query(dblocal),queryl(dblocal);
+    QString queryString;
+    query.exec("select * from sensor order by type asc,yloc asc,xloc asc;");
     //bool first=true;
+    int f=0;
+    QString typef;
     for(sensornum=0;query.next();sensornum++){
          num1[sensornum]=query.value(0).toString();
+         typef=query.value(1).toString();
+        if(!f){
+            f=1;
+            type1[0]=typef;
+         }
+        else if(typef!=type1[f-1]){
+            type1[f]=typef;
+            f=f+1;
+        }
          xg[sensornum]=query.value(2).toString().toDouble();
          yg[sensornum]=query.value(3).toString().toDouble();
          //qDebug()<<num1[sensornum]<<xg[sensornum]<<yg[sensornum];
 
+
+         queryString = "show tables like '%1'";
+         queryString = queryString.arg(num1[sensornum]);
+         ok=queryl.exec(queryString);
+         if (!ok) {
+             qDebug() << "check data into local database error: " << queryl.lastQuery();
+
+         }
+         if(!queryl.next()){
+             //qDebug()<< ok;
+             qDebug() << "Table does not exist. Creating table..."<<num1[sensornum];
+             queryString = "create table %1(timeset varchar(20) primary key,data double not null )charset utf8;";
+             queryString = queryString.arg(num1[sensornum]);
+             ok=queryl.exec(queryString);
+             if (!ok) {
+                 qDebug() << "check data into local database error: " << queryl.lastQuery();
+
+             }
+         }
     }
-
-
+    for(int i=0;i<f;i++){
+        qDebug()<<type1[i]<<" 已添加传感器种类";
+        ui->comboBox->addItem(type1[i]);//添加传感器种类
+    }
+    currenttype=0;
+    sensortypenum=f;
+    sensornum=sensornum/f;
+    qDebug()<<"t,f "<<f<<"  "<<sensornum;
     switchbtn=ui->widget;
     connect(switchbtn,SIGNAL(btnChanged()),this,SLOT(Slot1()));
 
@@ -54,7 +94,7 @@ MainWindow::MainWindow(QWidget *parent)
                                   "border-radius:10px;font: 11pt 'Adobe Devanagari';");
 
 
-    download = new DownloadThread(sensornum,num1);
+    download = new DownloadThread(sensornum,sensortypenum,num1);
     download->moveToThread(&downloadTh);
     connect(&downloadTh,SIGNAL(started()),download,SLOT(onCreateTimer()));
     connect(&downloadTh,&QThread::finished,download,&QObject::deleteLater);
@@ -63,7 +103,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(download,SIGNAL(sendText(QString *,QString *)),this,SLOT(update(QString*,QString*)));//信号
     connect(this,SIGNAL(sendData(int)),download,SLOT(timerStartOrStop(int)));
 
-    updateth = new UpdateThread(sensornum,num1);
+    updateth = new UpdateThread(sensornum*f,num1);
     updateth->moveToThread(&updateTh);
     connect(&updateTh,SIGNAL(started()),updateth,SLOT(onCreateTimer()));
     connect(&updateTh,&QThread::finished,updateth,&QObject::deleteLater);
@@ -105,6 +145,24 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(customPlot, &QCustomPlot::mouseMove, this, &MainWindow::mouseMoveEvent);
     customPlot->setMouseTracking(true);
+
+    /*font: normal normal 15px "Microsoft YaHei";*/
+    ui->comboBox->setStyleSheet("QComboBox{border: 1px solid gray;border-radius:2px;padding: 0px 0px 0px 10px;color: rgba(51,51,51,1);background: transparent;text-align: AlignHCenter;color:rgb(0,0,0);background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(72,209,204, 255), stop:1 rgba(0, 250,154, 255));}"
+                                "QComboBox QAbstractItemView {outline: 0px solid gray;border-radius:10px;padding-top:10px;padding-bottom:10px;color:rgb(123,123,123);background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(72,209,204, 255), stop:1 rgba(0, 250,154, 255));}"
+
+                                "QComboBox QAbstractItemView::item {min-height: 26px;background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(72,209,204, 255), stop:1 rgba(0, 250,154, 255));}"
+                                "QComboBox QAbstractItemView::item:hover {color:rgb(255,255,255);background-color: qlineargradient(spread:pad, x1:0.52, y1:1, x2:0.54, y2:0, stop:0.0112994 rgba(70,130,180, 255), stop:1 rgba(34,139,34, 255));}"
+                                "QComboBox QAbstractItemView::item:selected {color:rgb(255,255,255);}"
+                                );
+
+    //去掉下拉框阴影
+    ui->comboBox->setView(new QListView());
+    ui->comboBox->view()->window()->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
+    ui->comboBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+
+
+
 }
 
 MainWindow::~MainWindow()
@@ -333,4 +391,13 @@ void MainWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
 }
 
 
+
+
+void MainWindow::on_comboBox_currentIndexChanged(int index)
+{
+    currenttype=ui->comboBox->currentIndex();
+    qDebug()<<"当前显示种类更新为"<<type1[currenttype];
+    if(!firstcg_combobox) firstcg_combobox=true;
+    else QTimer::singleShot(0,download, SLOT(onTimeout()));
+}
 

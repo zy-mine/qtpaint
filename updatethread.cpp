@@ -106,32 +106,32 @@ void UpdateThread::onTimeout()
         queryString = "select * from %1 order by timeset desc;";
         queryString = queryString.arg(n[i]);
         ok=query.exec(queryString);
-        if (!ok) {
-            qDebug() << "check data into local database error: " << query.lastError().text();
-
-        }
-        else{
-            //qDebug()<< ok;
-            while(query.next()){
-                if(first){
-                    first=false;
-                    //time[i]=query.value(0).toString();
-                    data[i]=query.value(1).toString();
-                }
+        if(!query.next()){
+            QString pop=stage(RandomNum(0,100)*0.01,2);
+            queryString = "INSERT INTO %1 (timeset,data) VALUES ('%2','%3')";
+            queryString = queryString.arg(n[i]).arg(sTime).arg(pop);
+            ok=query.exec(queryString);
+            if(!ok){
+                qDebug() << "check data into local database error: " << query.lastQuery();
+            }
+            else{
+                qDebug() <<"新数据为"<<n[i]<<"  "<<pop;
             }
         }
-        first=true;
-        d=data[i].toDouble();
-        //模拟最新数据
-        QString pop=stage(RandomNum(d*60,(1-d)*40+100*d)*0.01,2);
-        queryString = "INSERT INTO %1 (timeset,data) VALUES ('%2','%3')";
-        queryString = queryString.arg(n[i]).arg(sTime).arg(pop);
-        ok=query.exec(queryString);
-        if(!ok){
-            qDebug() << "check data into local database error: " << query.lastQuery();
-        }
         else{
-            qDebug() <<"新数据为"<<n[i]<<"  "<<pop;
+            first=true;
+            d=data[i].toDouble();
+            //模拟最新数据
+            QString pop=stage(RandomNum(d*60,(1-d)*40+100*d)*0.01,2);
+            queryString = "INSERT INTO %1 (timeset,data) VALUES ('%2','%3')";
+            queryString = queryString.arg(n[i]).arg(sTime).arg(pop);
+            ok=query.exec(queryString);
+            if(!ok){
+                qDebug() << "check data into local database error: " << query.lastQuery();
+            }
+            else{
+                qDebug() <<"新数据为"<<n[i]<<"  "<<pop;
+            }
         }
     }
 
