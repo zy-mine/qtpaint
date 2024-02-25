@@ -39,7 +39,6 @@ private slots:
     //void on_pushButton_2_clicked();
     void on_update_button_clicked();
     void mouseMoveEvent(QMouseEvent *mouseEvent);
-
     void on_comboBox_currentIndexChanged(int index);
 
 public slots:
@@ -53,7 +52,7 @@ private:
     QCustomPlot *customPlot;
     QSqlDatabase dblocal;
     QTimer timer;
-    int timer1=0;
+    int timer1=0;           //转到
     int timer3_timeout=0;
     bool mathe=false;
 

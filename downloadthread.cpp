@@ -57,10 +57,10 @@ void DownloadThread::Set_Database(){
     dblocal.setPassword("200243");
     bool ok = dblocal.open();
     if (ok){
-        qDebug("下载：本地数据库连接成功！");
+        qDebug("下载：云端数据库连接成功！");
     }
     else {
-        qDebug("下载：本地数据库连接失败！");
+        qDebug("下载：云端数据库连接失败！");
         qDebug()<<"error open database because"<<dblocal.lastError().text();
     }
 }

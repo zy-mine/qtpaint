@@ -134,18 +134,5 @@ void UpdateThread::onTimeout()
             }
         }
     }
-
-    // double light =RandomNum(0,7000000)*0.01;;//lux光照强度，7w
-    // //qDebug()<<light;
-    // if(status5==0){
-    //     light=0;
-    // }
-    // light==0?statu="不正常":statu="正常";
-    //                                        query.prepare("INSERT INTO Light(timeset,light,status) "
-    //                                                      "VALUES(:timeset,:light,:status)");
-    // query.bindValue(":timeset", sTime);
-    // query.bindValue(":light", stage(light,2));
-    // query.bindValue(":status",statu);
-    // query.exec();
     MainWindow::mutex.unlock();
 }
