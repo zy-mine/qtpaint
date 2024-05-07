@@ -9,7 +9,7 @@ class DownloadThread: public QObject
 {
     Q_OBJECT
 public:
-    explicit DownloadThread(int sensornum,QString num[100],QObject *parent = nullptr);
+    explicit DownloadThread(int sensornum,int sensortype,QString num[100],QObject *parent = nullptr);
     ~DownloadThread();
     void Set_Database();
 
@@ -24,7 +24,7 @@ private:
     QTimer* timer = nullptr;
     QSqlDatabase dblocal;
     QString time[100],data[100];
-    int sensorn;
+    int sensorn,sensort;
     QString n[100];
 };
 

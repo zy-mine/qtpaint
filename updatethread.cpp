@@ -106,46 +106,33 @@ void UpdateThread::onTimeout()
         queryString = "select * from %1 order by timeset desc;";
         queryString = queryString.arg(n[i]);
         ok=query.exec(queryString);
-        if (!ok) {
-            qDebug() << "check data into local database error: " << query.lastError().text();
-
-        }
-        else{
-            //qDebug()<< ok;
-            while(query.next()){
-                if(first){
-                    first=false;
-                    //time[i]=query.value(0).toString();
-                    data[i]=query.value(1).toString();
-                }
+        if(!query.next()){
+            QString pop=stage(RandomNum(0,100)*0.01,2);
+            queryString = "INSERT INTO %1 (timeset,data) VALUES ('%2','%3')";
+            queryString = queryString.arg(n[i]).arg(sTime).arg(pop);
+            ok=query.exec(queryString);
+            if(!ok){
+                qDebug() << "check data into local database error: " << query.lastQuery();
+            }
+            else{
+                qDebug() <<"新数据为"<<n[i]<<"  "<<pop;
             }
         }
-        first=true;
-        d=data[i].toDouble();
-        //模拟最新数据
-        QString pop=stage(RandomNum(d*60,(1-d)*40+100*d)*0.01,2);
-        queryString = "INSERT INTO %1 (timeset,data) VALUES ('%2','%3')";
-        queryString = queryString.arg(n[i]).arg(sTime).arg(pop);
-        ok=query.exec(queryString);
-        if(!ok){
-            qDebug() << "check data into local database error: " << query.lastQuery();
-        }
         else{
-            qDebug() <<"新数据为"<<n[i]<<"  "<<pop;
+            first=true;
+            d=query.value(1).toDouble();
+            //模拟最新数据
+            QString pop=stage(RandomNum(d*60,(1-d)*40+100*d)*0.01,2);
+            queryString = "INSERT INTO %1 (timeset,data) VALUES ('%2','%3')";
+            queryString = queryString.arg(n[i]).arg(sTime).arg(pop);
+            ok=query.exec(queryString);
+            if(!ok){
+                qDebug() << "check data into local database error: " << query.lastQuery();
+            }
+            else{
+                qDebug() <<n[i]<<"上一数据为"<<d<<"新数据为"<<pop;
+            }
         }
     }
-
-    // double light =RandomNum(0,7000000)*0.01;;//lux光照强度，7w
-    // //qDebug()<<light;
-    // if(status5==0){
-    //     light=0;
-    // }
-    // light==0?statu="不正常":statu="正常";
-    //                                        query.prepare("INSERT INTO Light(timeset,light,status) "
-    //                                                      "VALUES(:timeset,:light,:status)");
-    // query.bindValue(":timeset", sTime);
-    // query.bindValue(":light", stage(light,2));
-    // query.bindValue(":status",statu);
-    // query.exec();
     MainWindow::mutex.unlock();
 }

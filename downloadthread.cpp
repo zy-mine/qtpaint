@@ -5,12 +5,12 @@
 #include <mainwindow.h>
 #include <QSqlError>
 
-DownloadThread::DownloadThread(int sensornum,QString *num,QObject *parent) : QObject(parent)
+DownloadThread::DownloadThread(int sensornum,int sensortype,QString *num,QObject *parent) : QObject(parent)
 {
     Set_Database();
     sensorn=sensornum;
     //qDebug()<<*(num+1);
-    for(int i=0;i<sensorn;i++){
+    for(int i=0;i<sensorn*sensortype;i++){
         n[i]=*(num+i);
     }
 }
@@ -57,10 +57,10 @@ void DownloadThread::Set_Database(){
     dblocal.setPassword("200243");
     bool ok = dblocal.open();
     if (ok){
-        qDebug("下载：本地数据库连接成功！");
+        qDebug("下载：云端数据库连接成功！");
     }
     else {
-        qDebug("下载：本地数据库连接失败！");
+        qDebug("下载：云端数据库连接失败！");
         qDebug()<<"error open database because"<<dblocal.lastError().text();
     }
 }
@@ -72,13 +72,12 @@ void DownloadThread::onTimeout()
     int ok;
     bool first=true;
     qDebug()<<"下载子线程运行中!";
-
-    for(int i=0;i<sensorn;i++){
+    for(int i=currenttype*sensorn;i<currenttype*sensorn+sensorn;i++){
         QString queryString = "select * from %1 order by timeset desc;";
         queryString = queryString.arg(n[i]);
         ok=query.exec(queryString);
         if (!ok) {
-            qDebug() << "check data into local database error: " << query.lastError().text();
+            qDebug() << "check data into local database error: "<<query.lastQuery()<< query.lastError().text();
 
         }
         else{
@@ -86,8 +85,8 @@ void DownloadThread::onTimeout()
             while(query.next()){
                 if(first){
                     first=false;
-                    time[i]=query.value(0).toString();
-                    data[i]=query.value(1).toString();
+                    time[i-currenttype*sensorn]=query.value(0).toString();
+                    data[i-currenttype*sensorn]=query.value(1).toString();
                 }
             }
         }

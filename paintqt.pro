@@ -41,3 +41,5 @@ contains(QT_ARCH,x86_64){
     include($$PWD\gsl\gsl.pri)
 }
 
+RESOURCES +=
+
