@@ -120,7 +120,7 @@ void UpdateThread::onTimeout()
         }
         else{
             first=true;
-            d=data[i].toDouble();
+            d=query.value(1).toDouble();
             //模拟最新数据
             QString pop=stage(RandomNum(d*60,(1-d)*40+100*d)*0.01,2);
             queryString = "INSERT INTO %1 (timeset,data) VALUES ('%2','%3')";
@@ -130,7 +130,7 @@ void UpdateThread::onTimeout()
                 qDebug() << "check data into local database error: " << query.lastQuery();
             }
             else{
-                qDebug() <<"新数据为"<<n[i]<<"  "<<pop;
+                qDebug() <<n[i]<<"上一数据为"<<d<<"新数据为"<<pop;
             }
         }
     }
